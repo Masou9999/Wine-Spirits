@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập Nhật Rượu - WINE & SPIRITS</title>
+    <link rel="stylesheet" href="/css/search.css">
+</head>
+<body>
+
+    <form id="searchForm" onSubmit="handleSearch(event)">
+        <label for="keyword">Tìm rượu cần cập nhật:</label>
+        <input type="text" id="keyword" placeholder="Nhập tên rượu bạn muốn cập nhật..." />
+        <button type="submit" class="btn">Tìm kiếm</button>
+    </form>
+
+    <div id="results"></div>
+
+    <a href="/" class="btn">Quay lại trang chủ</a>
+
+    <script>
+        function handleSearch(event) {
+            event.preventDefault();
+            const keyword = document.getElementById('keyword').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            if (keyword === "") {
+                resultsDiv.innerHTML = '<p class="no-results" style="text-align:center; margin-top: 20px; font-weight: bold; color: #4b151d;">Nhập tên rượu cần cập nhật...</p>';
+                return; 
+            }
+
+            resultsDiv.innerHTML = '<p style="text-align:center;">Đang kiểm tra kho rượu...</p>';
+
+            fetch(`/wines/search?keyword=${encodeURIComponent(keyword)}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+            .then(res => res.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
+
+                if (data.length > 0) {
+                    const table = document.createElement('table');
+                    table.className = 'result-table';
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;">STT</th>
+                                <th style="text-align: center;">Hình ảnh</th>
+                                <th style="text-align: center;">Tên sản phẩm</th>
+                                <th style="text-align: center;">Hành động</th>
+                            </tr>
+                        </thead>
+                    `;
+
+                    const tbody = document.createElement('tbody');
+
+                    data.forEach((item, idx) => {
+                        const tr = document.createElement('tr');
+                        const itemId = item.id || item._id; 
+                        
+                        tr.onclick = () => window.location.href = `/updatewine/detail?id=${itemId}`;
+                        tr.style.cursor = 'pointer';
+                        tr.style.borderBottom = '1px solid #eee';
+
+                        const volumeHtml = item.volume ? Number(item.volume) + ' ml' : '';
+
+                        tr.innerHTML = `
+                            <td style="text-align: center; color: #555; padding: 10px;"><strong>${idx + 1}</strong></td>
+                            <td style="text-align: center; padding: 10px;">
+                                <img class="product-img" src="/images/${item.image}" alt="${item.name}" 
+                                     onerror="this.src='https://via.placeholder.com/60x60?text=Wine'"
+                                     style="width: 60px; height: auto; object-fit: cover; border-radius: 4px;">
+                            </td>
+                            <td style="text-align: center; color: #555; padding: 10px;">
+                                <strong>${item.name}</strong><br>
+                                <span style="font-size: 0.9em; color: #888;">${volumeHtml}</span>
+                            </td>
+                            <td style="text-align: center; padding: 10px;">
+                                <span style="color: #4A0E1B; font-weight: bold; text-decoration: underline;">Sửa thông tin</span>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(tr);
+                    });
+
+                    table.appendChild(tbody);
+                    resultsDiv.appendChild(table);
+
+                } else {
+                    resultsDiv.innerHTML = '<p class="no-results" style="text-align:center; margin-top: 20px;">Không tìm thấy chai rượu nào để sửa.</p>';
+                }   
+            })
+            .catch(err => {
+                console.error('Error fetching search results:', err);
+                resultsDiv.innerHTML = '<p class="error-message" style="color:red; text-align:center;">Đã xảy ra lỗi khi tìm kiếm. Vui lòng thử lại sau.</p>';
+            });
+        }
+    </script>
+</body>
+</html>

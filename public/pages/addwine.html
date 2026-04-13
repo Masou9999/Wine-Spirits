@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Rượu Mới</title>
+    <link rel="stylesheet" href="/css/addwine.css">
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Thêm Rượu Mới</h2>
+        <form id="add-wine-form">
+            
+            <div class="form-group">
+                <label>Mã Sản Phẩm:</label>
+                <input type="text" id="wine-id" name="id" value="Đang tải..." readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Tên Sản Phẩm:</label>
+                <input type="text" name="name" required placeholder="Nhập tên rượu...">
+            </div>
+
+
+            <div class="form-group">
+                <label>Loại:</label>
+                <input type="text" name="category" placeholder="Ví dụ: Vang, Rượu Mạnh...">
+            </div>
+
+            <div class="form-group">
+                <label>Tags:</label>
+                <input type="text" name="tags" placeholder="ví dụ: sang trọng, quà tặng, thịt đỏ">
+            </div>
+
+            <div class="form-group">
+                <label>Dung tích (volume):</label>
+                <input type="text" name="volume" placeholder="Ví dụ: 750ml, 1L...">
+            </div>
+
+            <div class="form-group">
+                <label>Xuất xứ - Quốc gia:</label>
+                <input type="text" name="origin_country" placeholder="Ví dụ: Pháp">
+            </div>
+
+            <div class="form-group">
+                <label>Xuất xứ - Vùng:</label>
+                <input type="text" name="origin_region" placeholder="Ví dụ: Bordeaux">
+            </div>
+
+            <div class="form-group">
+                <label>Nhà sản xuất:</label>
+                <input type="text" name="origin_producer" placeholder="Ví dụ: Chateau Lafite">
+            </div>
+
+            <div class="form-group">
+                <label>Giá (VNĐ):</label>
+                <input type="number" name="price" required placeholder="Nhập giá tiền...">
+            </div>
+
+            <div class="form-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="isAvailable" name="isAvailable">
+                    <span class="checkmark"></span>
+                    Còn hàng
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Hình ảnh sản phẩm:</label>
+                <input type="file" name="image" accept="image/*">
+            </div>
+
+            <button type="button" id="btn-add">Thêm rượu</button>
+            <button type="button" id="btn-submit">Thêm vào danh sách</button>
+            
+            <a href="/" class="btn-home">Quay lại Trang chủ</a>
+        </form>
+        <div id="response-msg"></div>
+    </div>
+
+    <script>
+        let winesToSubmit = [];
+        let currentId = '';
+
+        function getNextAlcIdLocal(currentIdStr) {
+            if (!currentIdStr) return 'ALC001';
+            let num = parseInt(currentIdStr.replace('ALC', ''), 10);
+            return 'ALC' + String(num + 1).padStart(3, '0');
+        }
+
+        function getNextAlcId(dataList) {
+            let nextNumber = 1;
+            if (Array.isArray(dataList) && dataList.length > 0) {
+                const alcIds = dataList
+                    .map(item => item.id)
+                    .filter(id => id && typeof id === 'string' && id.startsWith('ALC'));
+
+                if (alcIds.length > 0) {
+                    const numericParts = alcIds.map(id => parseInt(id.replace('ALC', ''), 10));
+                    nextNumber = Math.max(...numericParts) + 1; 
+                }
+            }
+            return 'ALC' + String(nextNumber).padStart(3, '0');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/wines', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }) 
+            .then(res => res.json())
+            .then(data => {
+                currentId = getNextAlcId(data);
+                document.getElementById('wine-id').value = currentId;
+            })
+            .catch(error => {
+                document.getElementById('wine-id').value = 'Lỗi kết nối';
+            });
+        });
+
+        document.getElementById('btn-add').addEventListener('click', function() {
+            const form = document.getElementById('add-wine-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const wineObj = {};
+
+            formData.forEach((value, key) => {
+                if (key !== 'image') {
+                    wineObj[key] = value;
+                }
+            });
+
+            const imageFile = formData.get('image');
+            if (imageFile && imageFile.name) {
+                wineObj.imageFile = imageFile;
+            }
+
+            winesToSubmit.push(wineObj);
+
+            const msgDiv = document.getElementById('response-msg');
+            msgDiv.style.color = 'blue';
+            msgDiv.innerText = `Đã thêm tạm thời sản phẩm: ${wineObj.name} (ID: ${wineObj.id}). Tổng chờ thêm vào danh sách: ${winesToSubmit.length}`;
+
+            form.reset();
+
+            currentId = getNextAlcIdLocal(currentId);
+            document.getElementById('wine-id').value = currentId;
+        });
+
+        document.getElementById('btn-submit').addEventListener('click', function() {
+            if (winesToSubmit.length === 0) {
+                document.getElementById('response-msg').innerText = 'Chưa có sản phẩm nào để thêm!';
+                return;
+            }
+
+            const submitData = new FormData();
+
+            winesToSubmit.forEach((wine, index) => {
+                submitData.append(`wines[${index}][id]`, wine.id);
+                submitData.append(`wines[${index}][name]`, wine.name);
+                submitData.append(`wines[${index}][category]`, wine.category);
+                submitData.append(`wines[${index}][tags]`, wine.tags);
+                submitData.append(`wines[${index}][volume]`, Number(wine.volume));
+
+                if (wine.origin_country && wine.origin_country.trim() !== "") {
+                submitData.append(`wines[${index}][origin][country]`, wine.origin_country.trim());
+                }
+                if (wine.origin_region && wine.origin_region.trim() !== "") {
+                    submitData.append(`wines[${index}][origin][region]`, wine.origin_region.trim());
+                }
+                if (wine.origin_producer && wine.origin_producer.trim() !== "") {
+                    submitData.append(`wines[${index}][origin][producer]`, wine.origin_producer.trim());
+                }
+
+                submitData.append(`wines[${index}][price]`, Number(wine.price));
+                submitData.append(`wines[${index}][isAvailable]`, wine.isAvailable === 'on');
+                
+                if (wine.imageFile) {
+                    submitData.append('images', wine.imageFile);
+                }
+            });
+
+            fetch('/api/addwines', {
+                method: 'POST',
+                body: submitData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const msgDiv = document.getElementById('response-msg');
+                if (data.success) {
+                    msgDiv.style.color = 'green';
+                    msgDiv.innerText = data.message;
+                    winesToSubmit = [];
+                } else {
+                    msgDiv.style.color = 'red';
+                    msgDiv.innerText = `Lỗi: ${data.message}`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('response-msg').innerText = 'Lỗi kết nối đến server!';
+            });
+        });
+    </script>
+</body>
+</html>

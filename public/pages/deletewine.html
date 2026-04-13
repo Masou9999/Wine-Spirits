@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xóa Rượu - WINE & SPIRITS</title>
+    <link rel="stylesheet" href="/css/delete.css">
+</head>
+<body style="background-color: #f8f5f0;">
+
+    <form id="searchForm" onSubmit="handleSearch(event)">
+        <label for="keyword">Tìm rượu muốn xóa:</label>
+        <input type="text" id="keyword" placeholder="Nhập tên rượu..." />
+        <button type="submit" class="btn">Tìm kiếm</button>
+    </form>
+
+    <div id="results"></div>
+
+    <a href="/" class="btn" style="display: block; width: fit-content; margin: 20px auto; text-align: center;">Quay lại trang chủ</a>
+
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color: #4A0E1B; margin-top: 0; margin-bottom: 15px;">Xác nhận xóa</h2>
+            <p id="deleteMessage" style="color: #555; font-size: 16px; line-height: 1.5;"></p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button class="btn-confirm" onclick="executeDelete()">Xác nhận Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+    let currentDeleteId = null;
+    let deleteMode = 'single'; 
+    let currentSearchKeyword = ''; 
+
+    function handleSearch(event) {
+        if (event) event.preventDefault();
+        const keyword = document.getElementById('keyword').value.trim();
+        const resultsDiv = document.getElementById('results');
+
+        if (keyword === "") {
+            resultsDiv.innerHTML = '<p style="text-align:center; margin-top: 20px; font-weight: bold; color: #4b151d;">Nhập tên rượu để tìm và xóa...</p>';
+            return; 
+        }
+
+        currentSearchKeyword = keyword;
+
+        fetch(`/wines/search?keyword=${encodeURIComponent(keyword)}`, {
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            resultsDiv.innerHTML = '';
+            if (data.length > 0) {
+                
+                const wrapperDiv = document.createElement('div');
+                wrapperDiv.style.width = '100%';
+                wrapperDiv.style.display = 'flex';
+                wrapperDiv.style.flexDirection = 'column';
+
+                const table = document.createElement('table');
+                table.className = 'result-table';
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">Mã Sản phẩm</th>
+                            <th style="text-align: center;">Hình ảnh</th>
+                            <th style="text-align: center;">Tên sản phẩm</th>
+                            <th style="text-align: center;">Hành động</th>
+                        </tr>
+                    </thead>
+                `;
+
+                const tbody = document.createElement('tbody');
+                data.forEach((item, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #eee';
+                    
+                    const itemId = item.id || item._id;
+                    const volumeHtml = item.volume ? item.volume + ' ml' : '';
+
+                    tr.innerHTML = `
+                        <td style="text-align: center; padding: 10px;">${itemId}</td>
+                        <td style="text-align: center; padding: 10px;">
+                            <img src="/images/${item.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Wine'" style="width: 50px; height: auto; object-fit: cover; border-radius: 4px;">
+                        </td>
+                        <td style="padding: 10px;">
+                            <strong>${item.name}</strong><br>
+                            <span style="font-size: 0.85em; color: #888;">${volumeHtml}</span>
+                        </td>
+                        <td style="text-align: center; padding: 10px;">
+                            <button onclick="openDeleteModal('${itemId}', '${item.name}')" 
+                                    style="background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                                Xóa
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                
+                wrapperDiv.appendChild(table);
+
+                const actionDiv = document.createElement('div');
+                actionDiv.style.alignSelf = 'flex-end';
+                actionDiv.style.marginTop = '15px';
+                actionDiv.innerHTML = `<button onclick="openDeleteAllModal()" style="background: #c9302c; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Xóa tất cả ${data.length} kết quả này</button>`;
+                
+                wrapperDiv.appendChild(actionDiv);
+                
+                resultsDiv.appendChild(wrapperDiv);
+
+            } else {
+                resultsDiv.innerHTML = '<p style="text-align:center; margin-top: 20px;">Không tìm thấy rượu.</p>';
+            }   
+        })
+        .catch(err => {
+            resultsDiv.innerHTML = '<p style="color:red; text-align:center;">Lỗi kết nối server.</p>';
+        });
+    }
+
+    function openDeleteModal(id, name) {
+        deleteMode = 'single';
+        currentDeleteId = id;
+        document.getElementById('deleteMessage').innerHTML = `Bạn có chắc chắn muốn xóa vĩnh viễn rượu:<br><br><strong>${name}</strong>?`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function openDeleteAllModal() {
+        deleteMode = 'all';
+        document.getElementById('deleteMessage').innerHTML = `Bạn đang yêu cầu xóa <strong>TOÀN BỘ</strong> các chai rượu khớp với từ khóa "<span style="color: #d9534f;">${currentSearchKeyword}</span>".<br><br>Hành động này không thể hoàn tác. Bạn có chắc chắn không?`;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        currentDeleteId = null;
+    }
+
+    function showNotification(msg, isError = false) {
+        const noti = document.getElementById('notification');
+        noti.innerHTML = msg;
+        noti.style.backgroundColor = isError ? '#d9534f' : '#28a745';
+        noti.style.display = 'block';
+        setTimeout(() => {
+            noti.style.display = 'none';
+        }, 3000);
+    }
+
+    function executeDelete() {
+        if (deleteMode === 'single') {
+            if (!currentDeleteId) return;
+            fetch(`/wines/delete/${currentDeleteId}`, { method: 'DELETE' })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                closeModal();
+                showNotification("Đã xóa sản phẩm thành công!");
+                handleSearch(); 
+            })
+            .catch(err => {
+                closeModal();
+                showNotification("Đã xảy ra lỗi khi xóa sản phẩm.", true);
+            });
+        } else if (deleteMode === 'all') {
+            fetch(`/wines/delete-many?keyword=${encodeURIComponent(currentSearchKeyword)}`, { method: 'DELETE' })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                closeModal();
+                showNotification(data.message || "Đã xóa toàn bộ sản phẩm thành công!");
+                document.getElementById('results').innerHTML = ''; 
+            })
+            .catch(err => {
+                closeModal();
+                showNotification("Đã xảy ra lỗi khi xóa nhiều sản phẩm.", true);
+            });
+        }
+    }
+</script>
+</body>
+</html>

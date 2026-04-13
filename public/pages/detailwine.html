@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="/css/detailwine.css">
+</head>
+<body>
+
+    <div id="loading" class="loading">Đang tải thông tin sản phẩm...</div>
+    <div id="error-message" class="error-message">Không tìm thấy sản phẩm!</div>
+
+    <div id="product-container" class="container">
+        <div class="image-section">
+            <img id="wine-image" src="" alt="Hình ảnh rượu">
+        </div>
+        <div class="info-section">
+            <h1 id="wine-title" class="product-title"></h1>
+            <div id="wine-category" class="product-category"></div>
+            <div id="wine-price" class="product-price"></div>
+            
+            <ul class="details-list">
+                <li><strong>Mã SP:</strong> <span id="wine-id"></span></li>
+                <li><strong>Xuất xứ:</strong> <span id="wine-origin"></span></li>
+                <li><strong>Dung tích:</strong> <span id="wine-volume"></span></li>
+                <li><strong>Tình trạng:</strong> <span id="wine-status"></span></li>
+            </ul>
+
+            <a href="javascript:history.back()" class="back-btn">Quay lại danh sách</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const pathArray = window.location.pathname.split('/');
+            const productId = pathArray[pathArray.length - 1];
+
+            fetch(`/wines/${productId}`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(wine => {
+                    document.getElementById('loading').style.display = 'none';
+
+                    document.getElementById('wine-title').textContent = wine.name || 'Đang cập nhật';
+                    document.getElementById('wine-category').textContent = wine.category || 'Chưa phân loại';
+                    document.getElementById('wine-price').textContent = wine.price ? parseInt(wine.price).toLocaleString('vi-VN') + ' đ' : 'Liên hệ';
+                    document.getElementById('wine-id').textContent = wine.id; 
+                    document.getElementById('wine-volume').textContent = wine.volume ? `${wine.volume} ml` : 'Đang cập nhật';
+
+                    if (wine.origin && typeof wine.origin === 'object') {
+                        const region = wine.origin.region || '';
+                        const country = wine.origin.country || '';
+                        const producer = wine.origin.producer ? `(${wine.origin.producer})` : '';
+                        
+                        const originString = [region, country].filter(item => item !== '').join(', ') + ' ' + producer;
+                        document.getElementById('wine-origin').textContent = originString.trim() || 'Đang cập nhật';
+                    } else {
+                        document.getElementById('wine-origin').textContent = wine.origin || 'Đang cập nhật';
+                    }
+                    
+                    const statusEl = document.getElementById('wine-status');
+                    statusEl.textContent = wine.isAvailable ? 'Còn hàng' : 'Hết hàng';
+                    statusEl.style.color = wine.isAvailable ? '#198754' : '#dc3545';
+                    statusEl.style.fontWeight = 'bold';
+
+                    const imgEl = document.getElementById('wine-image');
+                    imgEl.src = `/images/${wine.image}`;
+                    imgEl.onerror = () => imgEl.src = 'https://via.placeholder.com/400x500?text=Wine+Image';
+
+                    const container = document.getElementById('product-container');
+                    container.style.opacity = '1';
+                })
+                .catch(error => {
+                    console.error('Lỗi khi tải dữ liệu:', error);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('error-message').style.display = 'block';
+                });
+        });
+    </script>
+</body>
+</html>

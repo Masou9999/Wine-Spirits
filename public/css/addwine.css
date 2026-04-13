@@ -1,0 +1,129 @@
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #f8f5f0; 
+}
+
+.form-container { 
+    max-width: 500px; 
+    margin: 40px auto; 
+    padding: 20px; 
+    background: white; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+}
+
+h2 { 
+    text-align: center; 
+    color: #4A0E1B; 
+}
+
+.form-group { 
+    margin-bottom: 15px; 
+}
+
+label { 
+    display: block; 
+    margin-bottom: 5px; 
+    font-weight: bold; 
+    color: #333; 
+}
+
+input { 
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid #ddd; 
+    border-radius: 4px; 
+    box-sizing: border-box; 
+}
+
+input[readonly] { 
+    background-color: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed; 
+    font-style: italic; 
+}
+
+button { 
+    width: 100%; 
+    padding: 12px; 
+    background-color: #4A0E1B; 
+    color: white; 
+    border: none; 
+    border-radius: 4px; 
+    margin-bottom: 12px;
+    font-weight: bold; 
+    cursor: pointer; 
+}
+
+button:hover { 
+    background-color: #D4AF37; 
+    color: #4A0E1B; 
+}
+.btn-home {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.btn-home:hover {
+    background-color: #ccc;
+}
+
+#response-msg { 
+    text-align: center; 
+    margin-top: 15px; 
+    font-weight: bold; 
+}
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 15px;
+}
+.custom-checkbox input {
+    display: none;
+}
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.custom-checkbox:hover .checkmark {
+    border-color: #4CAF50;
+}
+.custom-checkbox input:checked + .checkmark {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+.checkmark::after {
+    content: "";
+    position: absolute;
+    display: none;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.custom-checkbox input:checked + .checkmark::after {
+    display: block;
+}

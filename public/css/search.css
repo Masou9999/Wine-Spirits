@@ -1,0 +1,155 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #f9f8f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#searchForm {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+label {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 350px;
+    font-size: 15px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #4A0E1B;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+    transition: background 0.2s;
+    border: 1px solid #4A0E1B;
+    width: fit-content;
+}
+
+.btn:hover {
+    background-color: #D4AF37; 
+    color: #2E0810;
+    border-color: #D4AF37;
+}
+
+
+#results {
+    width: 100%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center; 
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fcfaf4;
+}
+
+.result-table th {
+    background-color: #4b151d;
+    color: #ffffff;
+    padding: 12px 10px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #6b1d28;
+}
+
+.result-table td {
+    padding: 15px 10px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #dacabb; 
+    color: #333;
+}
+
+
+.result-table tbody tr:hover {
+    background-color: #f5eedf; 
+}
+
+.wine-name {
+    color: #29538a;
+    text-decoration: underline;
+    font-weight: normal;
+}
+
+.wine-name:hover {
+    color: #173863;
+}
+
+.product-img {
+    height: 70px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.update-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #4b151d;
+}
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.form-group input[readonly] {
+    background-color: #f5f5f5;
+    color: #888;
+    cursor: not-allowed;
+}
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+.origin-box {
+    border: 1px dashed #ccc;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background: #fafafa;
+}
+.image-preview {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    display: block;
+}

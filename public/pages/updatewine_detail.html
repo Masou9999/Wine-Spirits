@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Cập Nhật Rượu - WINE & SPIRITS</title>
+    <link rel="stylesheet" href="/css/search.css">
+</head>
+<body style="background-color: #f8f5f0;">
+
+    <div id="error-message" style="color: red; text-align: center; margin-top: 20px;"></div>
+
+    <div class="update-container" id="form-container" style="display: none;">
+        <h2 style="text-align: center; color: #4A0E1B; margin-top: 0;">Chỉnh sửa thông tin rượu</h2>
+        
+        <form id="updateForm" onsubmit="handleUpdate(event)">
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="id">Mã Sản Phẩm:</label>
+                    <input type="text" id="id" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="isAvailable">Tình trạng:</label>
+                    <select id="isAvailable">
+                        <option value="true">Còn hàng</option>
+                        <option value="false">Hết hàng</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Tên Sản Phẩm:</label>
+                <input type="text" id="name" required />
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="category">Loại:</label>
+                    <input type="text" id="category" required />
+                </div>
+                <div class="form-group">
+                    <label>Ảnh sản phẩm:</label>
+                    <img id="current_image_preview" class="image-preview" src="" alt="Ảnh hiện tại" />
+                    <input type="hidden" id="old_image" />
+                    <input type="file" id="new_image" accept="image/*" />
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="volume">Dung Tích (ml):</label>
+                    <input type="number" id="volume" required />
+                </div>
+                <div class="form-group">
+                    <label for="price">Giá (VNĐ):</label>
+                    <input type="number" id="price" required />
+                </div>
+            </div>
+
+            <div class="origin-box">
+                <label style="font-weight: bold; color: #4A0E1B; margin-bottom: 10px; display: block;">Thông tin Xuất xứ:</label>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="origin_country">Quốc gia:</label>
+                        <input type="text" id="origin_country" />
+                    </div>
+                    <div class="form-group">
+                        <label for="origin_region">Vùng:</label>
+                        <input type="text" id="origin_region" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="origin_producer">Nhà sản xuất:</label>
+                    <input type="text" id="origin_producer" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="tags">Mô tả:</label>
+                <input type="text" id="tags" placeholder="sang trọng, quà tặng, thịt đỏ..." />
+            </div>
+
+            <div id="success-message" style="color: #28a745; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></div>
+
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px; padding: 12px; background-color: #4A0E1B; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Lưu Sản Phẩm</button>
+        </form>
+        
+        <a href="/updatewine" style="display: block; text-align: center; margin-top: 15px; padding: 10px; background-color: #eee; color: #333; border: 1px solid #ccc; text-decoration: none; border-radius: 4px;">Hủy và Quay lại</a>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        
+        const errorDiv = document.getElementById('error-message');
+        const formContainer = document.getElementById('form-container');
+
+        if (!id) {
+            errorDiv.innerHTML = "<p>Mã rượu không hợp lệ!</p>";
+        } else {
+            fetch('/wines/' + id, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(p => {
+                document.getElementById('id').value = p.id || p._id;
+                document.getElementById('name').value = p.name || '';
+                document.getElementById('category').value = p.category || '';
+                document.getElementById('volume').value = p.volume || '';
+                document.getElementById('price').value = p.price || '';
+                document.getElementById('isAvailable').value = p.isAvailable === false ? 'false' : 'true';
+                
+                document.getElementById('old_image').value = p.image || '';
+                if (p.image) {
+                    document.getElementById('current_image_preview').src = '/images/' + p.image;
+                } else {
+                    document.getElementById('current_image_preview').style.display = 'none';
+                }
+                
+                if (p.origin) {
+                    document.getElementById('origin_country').value = p.origin.country || '';
+                    document.getElementById('origin_region').value = p.origin.region || '';
+                    document.getElementById('origin_producer').value = p.origin.producer || '';
+                }
+
+                if (p.tags && Array.isArray(p.tags)) {
+                    document.getElementById('tags').value = p.tags.join(', ');
+                } else {
+                    document.getElementById('tags').value = p.tags || '';
+                }
+                
+                formContainer.style.display = 'block';
+            })
+            .catch(err => {
+                errorDiv.innerHTML = "<p>Lỗi: Không tìm thấy sản phẩm trong cơ sở dữ liệu.</p>";
+            });
+        }
+
+        function handleUpdate(event) {
+            event.preventDefault();
+            
+            const updateId = document.getElementById('id').value;
+            const formData = new FormData();
+            
+            formData.append('name', document.getElementById('name').value.trim());
+            formData.append('category', document.getElementById('category').value.trim());
+            formData.append('volume', document.getElementById('volume').value);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('isAvailable', document.getElementById('isAvailable').value);
+            formData.append('origin_country', document.getElementById('origin_country').value.trim());
+            formData.append('origin_region', document.getElementById('origin_region').value.trim());
+            formData.append('origin_producer', document.getElementById('origin_producer').value.trim());
+            formData.append('tags', document.getElementById('tags').value.trim());
+            formData.append('old_image', document.getElementById('old_image').value);
+
+            const imageFile = document.getElementById('new_image').files[0];
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+
+            fetch('/wines/update/' + updateId, {
+                method: 'PUT',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(data => {
+                const successMsg = document.getElementById('success-message');
+                successMsg.textContent = "Cập nhật thông tin rượu thành công!";
+                successMsg.style.display = "block";
+                
+                setTimeout(() => {
+                    window.location.href = "/updatewine";
+                }, 2000);
+            })
+            .catch(err => {
+                const successMsg = document.getElementById('success-message');
+                successMsg.textContent = "Đã xảy ra lỗi khi cập nhật rượu. Vui lòng kiểm tra lại server.";
+                successMsg.style.color = "red";
+                successMsg.style.display = "block";
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 40px 20px;
+    color: #333;
+}
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    gap: 40px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+.loading {
+    text-align: center;
+    font-size: 1.2em;
+    color: #666;
+    margin-top: 50px;
+}
+.image-section {
+    flex: 1;
+    text-align: center;
+}
+.image-section img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: contain;
+    max-height: 400px;
+}
+.info-section {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.product-title {
+    font-size: 2em;
+    margin: 0 0 10px 0;
+    color: #222;
+}
+.product-category {
+    font-size: 1.1em;
+    color: #777;
+    margin-bottom: 20px;
+}
+.product-price {
+    font-size: 1.8em;
+    color: #d9534f;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+.details-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+}
+.details-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 1.1em;
+}
+.details-list li strong {
+    display: inline-block;
+    width: 120px;
+    color: #555;
+}
+.back-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #4A0E1B;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    text-align: center;
+    transition: background 0.2s;
+    border: 1px solid #4A0E1B;
+    width: fit-content;
+}
+.back-btn:hover {
+    background-color: #D4AF37; 
+    color: #2E0810;
+    border-color: #D4AF37;
+}
+.error-message {
+    text-align: center;
+    color: #d9534f;
+    font-size: 1.5em;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+}

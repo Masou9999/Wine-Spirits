@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rượu Vang - Wine & Spirits</title>
+    <link rel="stylesheet" href="/css/wine.css">
+</head>
+<body>
+    <div class="container">
+
+        <h2 style="margin-bottom: 20px; color: #4A0E1B;">Danh Mục Rượu Vang</h2>
+        
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th style="text-align: center; width: 60px;">STT</th>
+                    <th style="text-align: center; width: 100px;">Hình ảnh</th>
+                    <th style="text-align: center;">Tên sản phẩm</th>
+                    <th>Giá (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody id="liquor-list-vang">
+            </tbody>
+        </table>
+        <a href="javascript:history.back()" class="back-btn">Quay lại trang chủ</a>
+    </div>
+    
+    <script>
+        let url = '/wines/vang';
+
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('liquor-list-vang'); 
+                
+
+                data.forEach((item, idx) => {
+                    const tr = document.createElement('tr');
+
+                    let volumeHtml = Number(item.volume) + ' ml';
+                    
+                    const displayPrice = Number(item.price) || 0;
+                    const formattedPrice = displayPrice ? displayPrice.toLocaleString('vi-VN') + ' VNĐ' : '—';
+                    tr.style.cursor = 'pointer';
+
+                    tr.onclick = function() {
+                        const productId = item.id; 
+                        window.location.href = `/wines/${productId}`;
+                    };
+
+                    tr.innerHTML = `
+                        <td style="text-align: center; color: #555;"><strong>${idx + 1}</strong></td>
+                        <td style="text-align: center;">
+                            <img class="product-img" src="/images/${item.image}" alt="${item.name}"
+                            onerror="this.src='https://via.placeholder.com/60x60?text=Wine'" 
+                            style="width:60px;height:auto;">
+                        </td>
+                        <td style="text-align: center; color: #555;">
+                            <strong>${item.name}</strong><br>
+                            <span style="font-size: 0.9em; color: #888;">${volumeHtml}</span>
+                        </td>
+                        <td style="color: #d9534f; font-weight: bold;">${formattedPrice}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error("Lỗi fetch:", err));
+    </script>
+</body>
+</html>
